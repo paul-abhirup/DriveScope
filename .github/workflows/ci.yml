@@ -1,0 +1,72 @@
+name: DriveScope CI/CD Pipeline
+
+on:
+  push:
+    branches: [ main, master ]
+  pull_request:
+    branches: [ main, master ]
+
+jobs:
+  backend-test:
+    runs-on: ubuntu-latest
+    strategy:
+      matrix:
+        python-version: ["3.10", "3.11"]
+
+    steps:
+    - uses: actions/checkout@v4
+
+    - name: Set up Python ${{ matrix.python-version }}
+      uses: actions/setup-python@v5
+      with:
+        python-version: ${{ matrix.python-version }}
+        cache: 'pip'
+
+    - name: Install dependencies
+      run: |
+        python -m pip install --upgrade pip
+        pip install -r requirements.txt
+        pip install -e packages/scenario-schema
+        pip install -e packages/vla-sdk
+
+    - name: Generate demo scenario data
+      run: |
+        python data/generate_demo_data.py
+
+    - name: Run Test Suite & Reproducibility Gate
+      env:
+        MODE: minimal
+      run: |
+        pytest -v tests/ --cov=. --cov-report=term-missing
+
+  frontend-check:
+    runs-on: ubuntu-latest
+    steps:
+    - uses: actions/checkout@v4
+
+    - name: Set up Node.js
+      uses: actions/setup-node@v4
+      with:
+        node-version: 20
+        cache: 'npm'
+        cache-dependency-path: apps/web/package.json
+
+    - name: Install frontend dependencies
+      working-directory: apps/web
+      run: npm ci || npm install
+
+    - name: Run frontend test & build
+      working-directory: apps/web
+      run: |
+        npm test
+        npm run build
+
+  docker-build:
+    runs-on: ubuntu-latest
+    needs: [backend-test, frontend-check]
+    steps:
+    - uses: actions/checkout@v4
+
+    - name: Build Docker Compose Stack
+      run: |
+        docker compose -f infra/docker-compose.yml build

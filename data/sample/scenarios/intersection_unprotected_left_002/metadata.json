@@ -1,0 +1,24 @@
+{
+  "scenario_id": "intersection_unprotected_left_002",
+  "source": "drivescope_demo_generator",
+  "conditions": {
+    "weather": "rain",
+    "time_of_day": "dusk"
+  },
+  "ego": {
+    "initial_speed_mps": 9.5
+  },
+  "hazards": [
+    "oncoming_vehicle"
+  ],
+  "expected_response": "yield_and_turn",
+  "fps": 20,
+  "description": "Demo benchmark scenario: Unprotected Left Turn Conflict (intersection).",
+  "tags": [
+    "intersection",
+    "urban",
+    "benchmark",
+    "demo"
+  ],
+  "license": "MIT"
+}

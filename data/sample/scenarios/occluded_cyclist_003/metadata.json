@@ -1,0 +1,24 @@
+{
+  "scenario_id": "occluded_cyclist_003",
+  "source": "drivescope_demo_generator",
+  "conditions": {
+    "weather": "rain",
+    "time_of_day": "dusk"
+  },
+  "ego": {
+    "initial_speed_mps": 9.5
+  },
+  "hazards": [
+    "cyclist"
+  ],
+  "expected_response": "brake_and_swerve",
+  "fps": 20,
+  "description": "Demo benchmark scenario: Occluded Cyclist Emerging from Van (occlusion).",
+  "tags": [
+    "occlusion",
+    "urban",
+    "benchmark",
+    "demo"
+  ],
+  "license": "MIT"
+}

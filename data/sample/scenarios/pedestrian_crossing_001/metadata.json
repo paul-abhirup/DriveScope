@@ -1,0 +1,24 @@
+{
+  "scenario_id": "pedestrian_crossing_001",
+  "source": "drivescope_demo_generator",
+  "conditions": {
+    "weather": "clear",
+    "time_of_day": "day"
+  },
+  "ego": {
+    "initial_speed_mps": 9.5
+  },
+  "hazards": [
+    "pedestrian"
+  ],
+  "expected_response": "brake",
+  "fps": 20,
+  "description": "Demo benchmark scenario: Night Pedestrian Crossing (crossing).",
+  "tags": [
+    "crossing",
+    "urban",
+    "benchmark",
+    "demo"
+  ],
+  "license": "MIT"
+}

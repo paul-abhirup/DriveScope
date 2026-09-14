@@ -1,0 +1,298 @@
+{
+  "0": {
+    "action": {
+      "steering": 0.02,
+      "brake": 0.0,
+      "throttle": 0.4
+    },
+    "hazards": [],
+    "ttc_seconds": null
+  },
+  "1": {
+    "action": {
+      "steering": -0.01,
+      "brake": 0.0,
+      "throttle": 0.4
+    },
+    "hazards": [],
+    "ttc_seconds": null
+  },
+  "2": {
+    "action": {
+      "steering": -0.01,
+      "brake": 0.0,
+      "throttle": 0.4
+    },
+    "hazards": [],
+    "ttc_seconds": null
+  },
+  "3": {
+    "action": {
+      "steering": -0.01,
+      "brake": 0.0,
+      "throttle": 0.4
+    },
+    "hazards": [],
+    "ttc_seconds": null
+  },
+  "4": {
+    "action": {
+      "steering": 0.02,
+      "brake": 0.0,
+      "throttle": 0.4
+    },
+    "hazards": [],
+    "ttc_seconds": null
+  },
+  "5": {
+    "action": {
+      "steering": -0.01,
+      "brake": 0.0,
+      "throttle": 0.4
+    },
+    "hazards": [],
+    "ttc_seconds": null
+  },
+  "6": {
+    "action": {
+      "steering": -0.01,
+      "brake": 0.0,
+      "throttle": 0.4
+    },
+    "hazards": [],
+    "ttc_seconds": null
+  },
+  "7": {
+    "action": {
+      "steering": -0.01,
+      "brake": 0.0,
+      "throttle": 0.4
+    },
+    "hazards": [],
+    "ttc_seconds": null
+  },
+  "8": {
+    "action": {
+      "steering": 0.02,
+      "brake": 0.0,
+      "throttle": 0.4
+    },
+    "hazards": [],
+    "ttc_seconds": null
+  },
+  "9": {
+    "action": {
+      "steering": -0.01,
+      "brake": 0.0,
+      "throttle": 0.4
+    },
+    "hazards": [],
+    "ttc_seconds": null
+  },
+  "10": {
+    "action": {
+      "steering": 0.0,
+      "brake": 0.75,
+      "throttle": 0.0
+    },
+    "hazards": [
+      "oncoming_vehicle"
+    ],
+    "ttc_seconds": 2.6
+  },
+  "11": {
+    "action": {
+      "steering": 0.0,
+      "brake": 0.75,
+      "throttle": 0.0
+    },
+    "hazards": [
+      "oncoming_vehicle"
+    ],
+    "ttc_seconds": 2.4
+  },
+  "12": {
+    "action": {
+      "steering": 0.0,
+      "brake": 0.75,
+      "throttle": 0.0
+    },
+    "hazards": [
+      "oncoming_vehicle"
+    ],
+    "ttc_seconds": 2.2
+  },
+  "13": {
+    "action": {
+      "steering": 0.0,
+      "brake": 0.75,
+      "throttle": 0.0
+    },
+    "hazards": [
+      "oncoming_vehicle"
+    ],
+    "ttc_seconds": 2.0
+  },
+  "14": {
+    "action": {
+      "steering": 0.0,
+      "brake": 0.75,
+      "throttle": 0.0
+    },
+    "hazards": [
+      "oncoming_vehicle"
+    ],
+    "ttc_seconds": 1.8
+  },
+  "15": {
+    "action": {
+      "steering": 0.0,
+      "brake": 0.75,
+      "throttle": 0.0
+    },
+    "hazards": [
+      "oncoming_vehicle"
+    ],
+    "ttc_seconds": 1.6
+  },
+  "16": {
+    "action": {
+      "steering": 0.0,
+      "brake": 0.75,
+      "throttle": 0.0
+    },
+    "hazards": [
+      "oncoming_vehicle"
+    ],
+    "ttc_seconds": 1.4
+  },
+  "17": {
+    "action": {
+      "steering": 0.0,
+      "brake": 0.75,
+      "throttle": 0.0
+    },
+    "hazards": [
+      "oncoming_vehicle"
+    ],
+    "ttc_seconds": 1.2
+  },
+  "18": {
+    "action": {
+      "steering": 0.0,
+      "brake": 0.75,
+      "throttle": 0.0
+    },
+    "hazards": [
+      "oncoming_vehicle"
+    ],
+    "ttc_seconds": 1.0
+  },
+  "19": {
+    "action": {
+      "steering": 0.0,
+      "brake": 0.75,
+      "throttle": 0.0
+    },
+    "hazards": [
+      "oncoming_vehicle"
+    ],
+    "ttc_seconds": 0.8
+  },
+  "20": {
+    "action": {
+      "steering": 0.0,
+      "brake": 0.75,
+      "throttle": 0.0
+    },
+    "hazards": [
+      "oncoming_vehicle"
+    ],
+    "ttc_seconds": 0.6
+  },
+  "21": {
+    "action": {
+      "steering": 0.0,
+      "brake": 0.75,
+      "throttle": 0.0
+    },
+    "hazards": [
+      "oncoming_vehicle"
+    ],
+    "ttc_seconds": 0.5
+  },
+  "22": {
+    "action": {
+      "steering": 0.0,
+      "brake": 0.75,
+      "throttle": 0.0
+    },
+    "hazards": [
+      "oncoming_vehicle"
+    ],
+    "ttc_seconds": 0.5
+  },
+  "23": {
+    "action": {
+      "steering": -0.01,
+      "brake": 0.0,
+      "throttle": 0.4
+    },
+    "hazards": [],
+    "ttc_seconds": null
+  },
+  "24": {
+    "action": {
+      "steering": 0.02,
+      "brake": 0.0,
+      "throttle": 0.4
+    },
+    "hazards": [],
+    "ttc_seconds": null
+  },
+  "25": {
+    "action": {
+      "steering": -0.01,
+      "brake": 0.0,
+      "throttle": 0.4
+    },
+    "hazards": [],
+    "ttc_seconds": null
+  },
+  "26": {
+    "action": {
+      "steering": -0.01,
+      "brake": 0.0,
+      "throttle": 0.4
+    },
+    "hazards": [],
+    "ttc_seconds": null
+  },
+  "27": {
+    "action": {
+      "steering": -0.01,
+      "brake": 0.0,
+      "throttle": 0.4
+    },
+    "hazards": [],
+    "ttc_seconds": null
+  },
+  "28": {
+    "action": {
+      "steering": 0.02,
+      "brake": 0.0,
+      "throttle": 0.4
+    },
+    "hazards": [],
+    "ttc_seconds": null
+  },
+  "29": {
+    "action": {
+      "steering": -0.01,
+      "brake": 0.0,
+      "throttle": 0.4
+    },
+    "hazards": [],
+    "ttc_seconds": null
+  }
+}

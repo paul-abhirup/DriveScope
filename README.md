@@ -1,189 +1,209 @@
 # DriveScope
 
-**Experiment infrastructure for evaluating Vision-Language-Action (VLA) agents — reproducibly, on a laptop and portable computers like raspberry pi.**
+**Experiment & Evaluation Infrastructure for Vision-Language-Action (VLA) Foundation Models.**
 
-DriveScope is not a simulator and not a new driving model. It's the orchestration and evaluation layer that sits around scenarios, sensor sequences, model inference, experiment runs, metrics, robustness testing, and failure analysis — so that VLA behavior can be measured, compared, and reproduced instead of eyeballed from a demo video.
+DriveScope is an open-source orchestration and evaluation platform for Vision-Language-Action (VLA) models and physical-AI agents. It provides a reproducible experimentation layer sitting around scenario sequences, camera observations, model inference heads, reasoning traces, metric evaluations, sensor perturbations, and failure analysis — so model behavior can be measured, compared, and reproduced across hardware setups.
 
-> Built around recorded driving scenarios as the first scenario source. The architecture is deliberately source-agnostic: CARLA, a live hardware rig, or another simulator can be plugged in later without touching the evaluation layer.
-
----
-
-## Why this exists
-
-VLA research gets hard to compare once multiple moving pieces are involved — a scenario produces images, a model produces actions and reasoning, timing matters, perturbations change the observation stream, and evaluating "was that a good decision" needs the exact context the model saw. VLAScope treats every experiment as an immutable, replayable record: same config + same seed → same result, every time.
-
-**Central question:** can a lightweight, reproducible software layer make VLA behavior measurable across scenarios, temporal conditions, and sensor perturbations — and make failures easy to inspect and reproduce?
+[![CI/CD Pipeline](https://github.com/paul-abhirup/DriveScope/actions/workflows/ci.yml/badge.svg)](https://github.com/paul-abhirup/DriveScope/actions/workflows/ci.yml)
+[![License: MIT](https://img.shields.io/badge/License-MIT-emerald.svg)](LICENSE)
+[![Python 3.10+](https://img.shields.io/badge/Python-3.10%2B-blue.svg)](pyproject.toml)
+[![Next.js 14](https://img.shields.io/badge/Next.js-14-black.svg)](apps/web)
+[![CPU First](https://img.shields.io/badge/Compute-Laptop%20%2F%20CPU%20Friendly-green.svg)](docs/architecture.md)
 
 ---
 
-## What it does
+## Key Capabilities
 
-- **Runs scenario sequences** through one or more pluggable VLA model adapters (mock, rule-based, remote API, local small VLM)
-- **Captures a full trace** of every step — observation, prediction, reasoning, timing, ground truth — in a consistent schema
-- **Scores reasoning/action consistency** — does the model's stated reasoning ("pedestrian entering ego path") actually match what its action head does?
-- **Applies controlled perturbations** — noise, blur, exposure, compression, frame-drop, delay — and quantifies robustness degradation
-- **Clusters and ranks failures** so it's a failure-analysis tool, not just a metrics dashboard
-- **Runs entirely on CPU** — no dedicated GPU required for the baseline path
-
-## What it deliberately doesn't do
-
-- Build or modify a photorealistic 3D simulator
-- Require a 7B+ VLA running locally
-- Claim closed-loop autonomous-driving safety validation
-- Reach for Kubernetes/Kafka/multi-region infra before there's a reason to
+- 🎯 **Pluggable VLA Adapters**: Evaluate models via strict contracts (`MockVLA`, `RuleBaseline`, `LocalQuantizedVLM` via int4 GGUF/ONNX on CPU, or remote multimodal APIs).
+- 🧠 **Reasoning-Action Consistency**: Quantify whether verbal chain-of-thought explanations ("pedestrian entering road") actually align with continuous actuator head actions (steering, brake, throttle).
+- 🔬 **Sensor Perturbation & Robustness Curves**: Test degradation against physical CMOS noise, rolling shutter skew, exposure variations, motion blur, and frame drops.
+- 📡 **Physical Sensor Rig Integration (ECE Core)**: Stream live frames with microsecond hardware timestamps and 6-DOF IMU telemetry from an ESP32-CAM or Raspberry Pi rig via `HardwareScenarioSource`.
+- 🔍 **Failure Intelligence Explorer**: Tag, filter, and cluster failures (contradictions, missed hazards, TTC breaches, unnecessary interventions) to diagnose failure modes.
+- ⏱️ **Synchronized Replay Workbench**: Frame-by-frame visual inspection of video observations, model reasoning, action gauges, ground truth targets, and latency.
+- ⚡ **Dual Execution Engines**: Run locally in seconds via `MODE=minimal` (SQLite + in-process async queue) or deploy full distributed clusters via Docker Compose (FastAPI + PostgreSQL + Redis + Celery + Next.js).
 
 ---
 
 ## Architecture
 
 ```
-                         Next.js / TypeScript UI
+                         Next.js 14 / TypeScript UI
                                    │
-                          REST + WebSocket
+                          REST + WebSockets
                                    │
-                              FastAPI API
+                         FastAPI Control Plane
                                    │
         ┌──────────────────┬──────┴───────────┬──────────────────┐
         │                  │                  │                  │
   Scenario Service     Run Service      Analysis Service          │
         │                  │                  │                  │
-        └────────────── PostgreSQL ───────────┴──────────────────┘
+        └────────────── Database Engine ──────┴──────────────────┘
+                 (SQLite in minimal / PostgreSQL in docker)
                                    │
-                            Redis / Celery
+                          Execution Dispatcher
+                 (In-process async / Celery + Redis)
                                    │
                     ┌──────────────┴──────────────┐
               Inference Worker              Evaluation Worker
                     │                              │
                VLA Adapters                  Metric Engine
-          (Mock / Rule / Remote /           (action, temporal,
-           Local VLM / future D1.5)      safety proxy, reasoning,
-                                              robustness)
+           (Mock / Rule / Quantized          (Action, Temporal,
+             VLM / Remote API)              Safety, Consistency,
+                                                 Robustness)
 
         Scenario Source Abstraction
-        ├── Local dataset sequences (MVP)
-        ├── CARLA (future)
-        └── Live hardware sensor rig (future)
+        ├── DatasetScenarioSource (Prerecorded frame sequences)
+        ├── HardwareScenarioSource (ESP32-CAM / Pi Camera live streams)
+        └── SimulatorScenarioSource (Pluggable CARLA / Simulation bridge)
 ```
-
-Every model, scenario source, and evaluation profile sits behind a versioned adapter interface — the database schema and UI never depend on which one is plugged in.
-
----
-
-## Tech stack
-
-| Layer | Choice |
-|---|---|
-| Frontend | Next.js, TypeScript, Tailwind |
-| API | FastAPI |
-| Database | PostgreSQL |
-| Queue / async jobs | Redis + Celery |
-| Object storage | MinIO (optional; local filesystem by default) |
-| Deployment | Docker Compose (local-first, cloud-ready) |
-
-**Resource target:** 8 GB RAM minimum, 4+ CPU cores, no GPU required. A `minimal` mode (SQLite + in-process task queue, no Docker Compose) is available for weaker machines — see [Quickstart](#quickstart).
 
 ---
 
 ## Quickstart
 
-### Full stack (Docker Compose)
+### Option 1: Minimal Mode (Zero Docker, Low-Spec Laptops, Instant Start)
+
+Runs on standard CPUs using SQLite and an in-process async execution loop (~250 MB RAM):
 
 ```bash
-git clone https://github.com/<your-username>/vlascope.git
-cd vlascope
-docker compose up
+# 1. Clone repository
+git clone https://github.com/paul-abhirup/DriveScope.git
+cd DriveScope
+
+# 2. Install dependencies & packages in editable mode
+pip install -r requirements.txt
+pip install -e packages/scenario-schema
+pip install -e packages/vla-sdk
+
+# 3. Generate benchmark demo dataset
+python data/generate_demo_data.py
+
+# 4. Start FastAPI Control Plane
+MODE=minimal uvicorn services.api.main:app --reload --port 8000
 ```
 
-This starts the web UI, API, worker, Postgres, Redis, and (optionally) MinIO. Visit `http://localhost:3000`.
-
-### Minimal mode (no Docker, low-spec machines)
+Start the Next.js frontend in a separate terminal:
 
 ```bash
-pip install -e services/api
-MODE=minimal uvicorn api.main:app --reload
+cd apps/web
+npm install
+npm run dev
 ```
 
-Runs on SQLite and an in-process task queue instead of Postgres/Redis/Celery — enough to load the demo scenario set and run a full experiment loop on modest hardware.
-
-### First run
-
-1. Load the bundled demo scenario set (`datasets/scenarios/`)
-2. Create an experiment with the `MockVLA` adapter
-3. Start the run and watch live progress over WebSocket
-4. Open the completed run in the replay workbench
+Visit [`http://localhost:3000`](http://localhost:3000) to open the DriveScope Workbench.
 
 ---
 
-## Project structure
+### Option 2: Full Distributed Stack (Docker Compose)
+
+Starts the Web UI, API, Celery Worker, PostgreSQL, Redis, and MinIO:
+
+```bash
+docker compose -f infra/docker-compose.yml up --build
+```
+
+---
+
+## Repository Structure
 
 ```
-vlascope/
+DriveScope/
 ├── apps/
-│   └── web/                 # Next.js app
-├── services/
-│   ├── api/                 # FastAPI control plane
-│   └── worker/               # Celery inference/eval jobs
+│   └── web/                         # Next.js 14 + TypeScript + Tailwind UI
+│       ├── src/app/                 # Dashboard, Scenarios, Builder, Replay, Compare, Failures, Models
+│       ├── src/components/          # Navbar, MetricCard, StatusBadge, Timeline
+│       └── src/lib/api.ts           # Typed API Client
 ├── packages/
-│   ├── scenario-schema/      # shared JSON/types
-│   └── vla-sdk/               # adapter contracts
-├── models/adapters/          # mock, rule-baseline, remote, local, future d1.5
-├── evaluation/                # action, temporal, safety, reasoning, robustness
+│   ├── scenario-schema/             # Shared Pydantic data models & contracts
+│   │   └── drivescope_schema/       # Scenario, Observation, VLAOutput, Trace, Metric, Failure, Manifest
+│   └── vla-sdk/                     # ScenarioSource & VLAAdapter protocol interfaces
+│       └── drivescope_vla_sdk/      # DatasetScenarioSource, HardwareScenarioSource
+├── models/
+│   └── adapters/                    # Model Adapter implementations
+│       ├── base.py                  # BaseVLAAdapter class
+│       ├── mock.py                  # Deterministic MockVLA (seedable synthetic generator)
+│       ├── rule_baseline.py         # Heuristic rule-based driving baseline
+│       ├── local_small_vlm.py       # Quantized Small VLM (GGUF / ONNX on CPU)
+│       ├── remote.py                # Hosted API / Remote multimodal adapter
+│       └── registry.py              # Adapter registry & health probes
+├── evaluation/                      # Multi-dimensional Evaluation Suite
+│   ├── action.py                    # Steering/brake/throttle MAE, RMSE, cumulative drift
+│   ├── temporal.py                  # Mean/p95 latency, hazard reaction delay
+│   ├── safety.py                    # Time-to-Collision (TTC) breaches, missed hazards
+│   ├── reasoning.py                 # Multi-factor Reasoning-Action Consistency scoring
+│   ├── perturbation.py              # Calibrated CMOS noise, rolling shutter, blur, exposure, frame drop
+│   ├── robustness.py                # Metric degradation slopes & delta analysis
+│   └── engine.py                    # Central EvaluationEngine orchestrator
+├── services/
+│   ├── api/                         # FastAPI Control Plane
+│   │   ├── main.py                  # FastAPI app with REST, CORS, and WebSocket routing
+│   │   ├── database.py              # SQLAlchemy engine (SQLite minimal / PostgreSQL docker)
+│   │   ├── models/db_models.py      # Relational schemas (Scenarios, Runs, Traces, Metrics, Failures)
+│   │   ├── routers/                 # /scenarios, /models, /experiments, /runs, /failures, /export, /ws
+│   │   └── services/                # ScenarioService, RunService, AnalysisService
+│   └── worker/                      # Celery & in-process execution workers
+│       ├── celery_app.py            # Celery configuration
+│       ├── runner.py                # Deterministic frame loop & evaluation pipeline
+│       └── tasks.py                 # Asynchronous task wrappers
+├── hardware/
+│   └── esp32_cam/                   # Physical sensor rig Arduino firmware (MJPEG + Hardware Timestamps + Servos)
 ├── data/
-│   ├── manifests/
-│   └── sample/                # tiny demo dataset
+│   ├── manifests/                   # demo_scenarios_manifest.json
+│   ├── sample/scenarios/            # Curated benchmark test sequences with frame data & ground truth
+│   └── generate_demo_data.py        # Scenario suite generator
 ├── infra/
-│   ├── docker-compose.yml
-│   └── migrations/
+│   ├── docker-compose.yml           # Multi-service stack (Web, API, Worker, Postgres, Redis, MinIO)
+│   ├── Dockerfile.api               # API container
+│   ├── Dockerfile.worker            # Worker container
+│   └── Dockerfile.web               # Next.js web container
 ├── docs/
-│   ├── architecture.md
-│   └── adr/
+│   ├── architecture.md              # System design & execution flows
+│   ├── references.md                # Research citations & physical AI foundations
+│   ├── adr/                         # Architecture Decision Records (ADR 0001 - 0005)
+│   └── research-notes/              # Reasoning-action consistency mathematical formulation
 ├── tests/
-└── README.md
+│   ├── unit/                        # Tests for schemas, adapters, evaluations, perturbations
+│   ├── api/                         # API endpoint tests & full lifecycle integration tests
+│   └── reproducibility/             # Deterministic seed reproducibility validation
+├── .github/workflows/ci.yml         # Automated GitHub Actions CI/CD Pipeline
+├── pyproject.toml / requirements.txt
+└── .env.example / .gitignore
 ```
 
 ---
 
-## Roadmap
+## Multi-Factor Reasoning-Action Consistency
 
-| Phase | Theme | Exit criterion |
-|---|---|---|
-| 0 | Foundation | Runnable stack + health checks |
-| 1 | Scenario system | Browse and inspect scenarios |
-| 2 | Run engine | Execute deterministic MockVLA runs |
-| 3 | Inference + trace | Per-frame observation → inference record |
-| 4 | Evaluation | Reproducible metrics per run |
-| 5 | Replay + comparison | Diagnose a failure end-to-end |
-| 6 | Robustness | Quantified robustness curves |
-| 7 | Failure intelligence | Failure explorer works end-to-end |
-| 8 | Polish | Portfolio-grade release, docs, demo |
-| 9 | Hardware source *(planned)* | Live sensor rig plugs into the same scenario contract |
+DriveScope mathematically assesses whether the model's stated verbal reasoning corresponds to its actual actuator commands:
 
-Full detail lives in [`docs/architecture.md`](docs/architecture.md) and the project plan.
+$$\text{Consistency} = 0.35 \cdot S_{\text{hazard}} + 0.25 \cdot S_{\text{temp}} + 0.25 \cdot S_{\text{dir}} + 0.15 \cdot S_{\text{conf}}$$
+
+- **$S_{\text{hazard}}$ (Hazard-Action Agreement)**: Verifies if verbal hazard identification induces braking ($\text{brake} \ge 0.30$).
+- **$S_{\text{dir}}$ (Directional Agreement)**: Verifies if lateral intent ("turn left", "steer right") matches steering angle.
+- **$S_{\text{temp}}$ (Temporal Alignment)**: Measures latency between hazard realization and action onset.
+- **$S_{\text{conf}}$ (Confidence Calibration)**: Flags overconfident predictions that exhibit severe error or miss hazards.
 
 ---
 
-## Testing
+## Hardware Sensor Rig (ESP32-CAM / Raspberry Pi)
+
+DriveScope includes full firmware and adapter support for testing physical sensor hardware:
+1. Flash `hardware/esp32_cam/drivescope_rig.ino` to an ESP32-CAM module.
+2. The firmware serves MJPEG frames embedded with microsecond hardware timer headers (`X-Hardware-Timestamp-Us`) and controls a 2-axis Pan-Tilt servo over `/control`.
+3. Point `HardwareScenarioSource(device_url="http://<ESP32_IP>/stream")` to evaluate live sensor feeds with end-to-end hardware latency tracking.
+
+---
+
+## Testing & Quality
+
+Run the complete test suite including unit tests, API integration flows, sensor perturbations, and reproducibility checks:
 
 ```bash
-# unit + service tests
 pytest tests/
-
-# UI critical-path tests
-cd apps/web && npm test
 ```
 
-Reproducibility is treated as a test case: the same config + seed must produce matching `MockVLA` output.
-
 ---
 
-## Positioning
+## License
 
-VLAScope is experiment infrastructure for evaluating vision-language-action agents on recorded driving scenarios — with asynchronous inference orchestration, reproducible run manifests, reasoning/action consistency checks, sensor perturbation testing, and failure analysis.
-
-It is **not** a self-driving system, a replication of any commercial simulation product, or a safety-certified evaluation tool. Metrics are labeled as proxies where they are not physics-grounded or safety-certified.
-
----
-
-## Acknowledgments
-
-Architectural terminology is aligned with publicly described concepts from SimForge's public workflow and related published research, used only as design inspiration — no affiliation, access to private infrastructure, or proprietary data is implied. See `docs/references.md` for the full source list.
+MIT License. See [LICENSE](LICENSE) for details.

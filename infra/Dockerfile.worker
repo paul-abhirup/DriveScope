@@ -1,0 +1,21 @@
+FROM python:3.10-slim
+
+WORKDIR /app
+
+RUN apt-get update && apt-get install -y --no-install-recommends \
+    build-essential \
+    libpq-dev \
+    && rm -rf /var/lib/apt/lists/*
+
+COPY requirements.txt .
+RUN pip install --no-cache-dir -r requirements.txt
+
+COPY packages/ packages/
+COPY models/ models/
+COPY evaluation/ evaluation/
+COPY services/ services/
+COPY data/ data/
+
+ENV PYTHONPATH=/app
+
+CMD ["celery", "-A", "services.worker.celery_app", "worker", "--loglevel=info"]
