@@ -1,11 +1,11 @@
 "use client";
 
-import { useEffect, useState } from "react";
+import { useEffect, useState, Suspense } from "react";
 import { useRouter, useSearchParams } from "next/navigation";
-import { FlaskConical, Play, Cpu, Sliders, ShieldCheck } from "lucide-react";
+import { FlaskConical, Play, Cpu, Sliders, ShieldCheck, Loader2 } from "lucide-react";
 import { api } from "@/lib/api";
 
-export default function NewExperimentPage() {
+function NewExperimentContent() {
   const router = useRouter();
   const searchParams = useSearchParams();
   const preselectedScenario = searchParams?.get("scenario");
@@ -230,5 +230,20 @@ export default function NewExperimentPage() {
         </button>
       </form>
     </div>
+  );
+}
+
+export default function NewExperimentPage() {
+  return (
+    <Suspense
+      fallback={
+        <div className="flex items-center justify-center min-h-[400px] text-zinc-500">
+          <Loader2 className="w-6 h-6 animate-spin mr-2" />
+          <span className="text-sm font-mono">Loading Experiment Builder...</span>
+        </div>
+      }
+    >
+      <NewExperimentContent />
+    </Suspense>
   );
 }
