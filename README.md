@@ -361,7 +361,7 @@ This starts Next.js (port 3000), FastAPI (port 8000), PostgreSQL (port 5432), Re
 
 ---
 
-## Repository Structure
+<!-- ## Repository Structure
 
 ```
 DriveScope/
@@ -418,7 +418,7 @@ DriveScope/
 └── .env.example / .gitignore
 ```
 
----
+--- -->
 
 ## Future Scope & Planned Extensions
 
