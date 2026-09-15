@@ -61,9 +61,9 @@
 ## 📋 Upcoming Tasks & Future Milestones
 
 ### Phase A: Real Model Weights & Local Quantized VLM Execution
-- [ ] Add download script (`scripts/download_models.sh`) for quantized small VLMs (e.g. `SmolVLM-Instruct-256M.gguf` or `Moondream2.onnx`).
-- [ ] Connect `LocalQuantizedVLM` to `llama-cpp-python` / `onnxruntime` backend for live image tokenization and prompt inference.
-- [ ] Benchmark CPU inference throughput and memory footprint across quantization levels (`Q4_K_M`, `Q8_0`, `FP16`).
+- [x] Add download script (`scripts/download_models.sh`) for quantized small VLMs (e.g. `SmolVLM2-256M/500M/2.2B` GGUF variants + mmproj).
+- [x] Connect `LocalQuantizedVLM` to `llama-cpp-python` / `onnxruntime` backend for live image tokenization and prompt inference (llama.cpp `MTMDChatHandler` + JSON-schema grammar; heuristic fallback when weights/backend unavailable).
+- [x] Benchmark CPU inference throughput and memory footprint across quantization levels (`Q4_K_M`, `Q8_0`, `FP16`) via `scripts/benchmark_quantization.py`.
 
 ### Phase B: Physical Hardware Rig Testing (ECE Track)
 - [ ] Deploy `drivescope_rig.ino` to a physical ESP32-CAM module and verify Wi-Fi MJPEG stream.

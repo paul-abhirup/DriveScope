@@ -5,6 +5,7 @@ __pycache__/
 *.so
 .Python
 VLA_Project_Plan.md
+project_motivation_and_interview_guide.md
 env/
 build/
 develop-eggs/
@@ -71,3 +72,7 @@ celerybeat.pid
 tmp/
 temp/
 exports/
+data/benchmarks/
+
+# Model weights (download via scripts/download_models.sh)
+weights/

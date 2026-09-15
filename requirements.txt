@@ -16,3 +16,7 @@ aiosqlite>=0.20.0
 pytest>=8.1.0
 pytest-asyncio>=0.23.5
 pytest-cov>=4.1.0
+
+# LocalQuantizedVLM real-inference backend (optional; adapter falls back to
+# heuristic when llama-cpp-python is not installed).
+# llama-cpp-python>=0.3.0
